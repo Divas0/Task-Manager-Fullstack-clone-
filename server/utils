@@ -1,0 +1,26 @@
+
+async function getSystemData() {
+      try {
+        const cpu = await si.currentLoad();
+        const memory = await si.mem();
+        const disk = await si.fsSize();
+        const network = await si.networkStats();
+        const data = {
+          timestamp: new Date().toISOString(),
+          cpuUsage: cpu.currentLoad,
+          memoryUsage: (memory.active / memory.total) * 100,
+          diskUsage: disk.map((d) => ({
+            fs: d.fs,
+            usage: d.use,
+          })),
+          netSent: network.reduce((acc, net) => acc + net.tx_bytes, 0),
+          netRecv: network.reduce((acc, net) => acc + net.rx_bytes, 0),
+        };
+        socket.emit("system", data);
+      } catch (error) {
+        console.error("Error fetching system data:", error);
+      }
+    }
+
+    getSystemData();
+  }, 1000); // Emit data eve
